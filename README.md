@@ -15,13 +15,19 @@ The Mini Netflix Clone is a proof-of-concept platform enabling users to explore 
 - An interactive visualization dashboard with Chart.js
 - Email-based auth (sign-up/login/password change)
 
+
+## 🚀 Future Enhancements
+
+> Plan to refactor the entire codebase using React for the frontend and Node.js with TypeScript for the backend.
+> Plan to acheive Scalable, Reliable, fault tolerant system design.
+> Plan to build on aws using services like EKS, ECR, API gateway, load balancer, autoscaling, route 53, lambda, dynamodb, kenesis, and so on.
 ---
 
 ## 👨‍💻 Team
 
 | Member                 | Role / Contribution                              |
 |------------------------|--------------------------------------------------|
-| Suhas Thandaga Ramesh | Sole Developer – architecture, code, UI/UX, testing |
+| Suhas               | Sole Developer – architecture, code, UI/UX, testing |
 
 ---
 
