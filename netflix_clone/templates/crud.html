@@ -1,0 +1,316 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>CRUD — Netflix</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen pt-24">
+
+  <!-- NAVBAR (your existing links…) -->
+  <nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-90 z-20">
+    <div class="flex items-center space-x-6">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+           alt="Logo" class="h-8"/>
+      <a href="{% url 'home' %}" class="hover:text-gray-400">Home</a>
+      <a href="{% url 'tvshows' %}" class="hover:text-gray-400">TV Shows</a>
+      <a href="{% url 'movies' %}" class="hover:text-gray-400">Movies</a>
+      <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+      <a href="{% url 'mylist' %}" class="hover:text-gray-400">My List</a>
+      <a href="{% url 'browsebylanguage' %}" class="hover:text-gray-400">Browse by Languages</a>
+      <a href="{% url 'crud' %}" class="font-bold hover:text-gray-400">CRUD</a>
+    </div>
+  </nav>
+
+  <main class="px-6 pt-32">
+    <h1 class="text-3xl font-bold mb-6">CRUD Operations</h1>
+
+    {% if message %}
+      <div class="mb-4 p-2 bg-green-600 rounded">{{ message }}</div>
+    {% endif %}
+    {% if result %}
+      <pre class="mb-4 bg-gray-800 p-4 rounded">{{ result|safe }}</pre>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      <!-- choose collection & operation -->
+      <div class="flex space-x-4">
+        <select id="collection" name="collection"
+                class="bg-gray-800 px-3 py-2 rounded w-1/2">
+          <option value="">-- select collection --</option>
+          <option value="movies">Movies</option>
+          <option value="tvshows">TV Shows</option>
+          <option value="credits">Credits</option>
+        </select>
+        <select id="operation" name="operation"
+                class="bg-gray-800 px-3 py-2 rounded w-1/2">
+          <option value="">-- select operation --</option>
+          <option value="read">Read</option>
+          <option value="insert">Insert</option>
+          <option value="update">Update</option>
+          <option value="delete">Delete</option>
+        </select>
+      </div>
+
+      <!-- Title / Name lookup field -->
+      <div id="key-field" class="hidden space-y-1">
+        <label for="key-input" class="block text-sm font-medium">
+          Lookup Title / Name
+        </label>
+        <input
+          type="text"
+          name="key"
+          id="key-input"
+          class="w-full bg-gray-800 px-3 py-2 rounded"
+          placeholder="Enter movie title, show name, or credit name…"
+        />
+      </div>
+
+      <!-- --------------- MOVIES --------------- -->
+      <div id="movies-fields" class="hidden space-y-2">
+        <label>Title</label>
+        <input type="text" name="movies_title" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+        <label>Original Title</label>
+        <input type="text" name="movies_original_title" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Overview</label>
+        <textarea name="movies_overview" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Budget</label>
+            <input type="number" name="movies_budget" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Revenue</label>
+            <input type="number" name="movies_revenue" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Runtime</label>
+            <input type="number" name="movies_runtime" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Release Date</label>
+            <input type="date" name="movies_release_date" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Home Page</label>
+            <input type="url" name="movies_homepage" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Status</label>
+            <input type="text" name="movies_status" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <label>Tagline</label>
+        <input type="text" name="movies_tagline" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Original Language</label>
+            <input type="text" name="movies_original_language" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Popularity</label>
+            <input type="number" step="any" name="movies_popularity" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Vote Average</label>
+            <input type="number" step="any" name="movies_vote_average" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Vote Count</label>
+            <input type="number" name="movies_vote_count" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <!-- JSON arrays -->
+        <label>Genres (JSON array of {{ '{id,name}' }}):</label>
+        <textarea name="movies_genres_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Keywords (JSON array of {{ '{id,name}' }}):</label>
+        <textarea name="movies_keywords_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Production Companies (JSON array):</label>
+        <textarea name="movies_prod_comp_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Production Countries (JSON array):</label>
+        <textarea name="movies_prod_ctry_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Upload Poster Image</label>
+        <input type="file" name="movies_image" accept="image/*" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+      </div>
+
+      <!-- --------------- TV SHOWS --------------- -->
+      <div id="tvshows-fields" class="hidden space-y-2">
+        <label>Name</label>
+        <input type="text" name="tvshows_name" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Original Name</label>
+        <input type="text" name="tvshows_original_name" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Overview</label>
+        <textarea name="tvshows_overview" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label># Seasons</label>
+            <input type="number" name="tvshows_number_of_seasons" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label># Episodes</label>
+            <input type="number" name="tvshows_number_of_episodes" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>First Air Date</label>
+            <input type="date" name="tvshows_first_air_date" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Last Air Date</label>
+            <input type="date" name="tvshows_last_air_date" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Popularity</label>
+            <input type="number" step="any" name="tvshows_popularity" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Vote Average</label>
+            <input type="number" step="any" name="tvshows_vote_average" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Vote Count</label>
+            <input type="number" name="tvshows_vote_count" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>Original Language</label>
+            <input type="text" name="tvshows_original_language" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label>Status</label>
+            <input type="text" name="tvshows_status" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+          </div>
+          <div>
+            <label>In Production</label>
+            <input type="checkbox" name="tvshows_in_production" class="ml-2"/>
+          </div>
+        </div>
+
+        <label>Type</label>
+        <input type="text" name="tvshows_type" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Tagline</label>
+        <input type="text" name="tvshows_tagline" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Home Page</label>
+        <input type="url" name="tvshows_homepage" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <!-- JSON arrays -->
+        <label>Genres (JSON array of strings):</label>
+        <textarea name="tvshows_genres_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Created By (comma‐separated):</label>
+        <input type="text" name="tvshows_created_by" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Languages (JSON array):</label>
+        <textarea name="tvshows_languages_json" rows="1" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Networks (JSON array):</label>
+        <textarea name="tvshows_networks_json" rows="1" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Origin Country</label>
+        <input type="text" name="tvshows_origin_country" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Spoken Languages (JSON array):</label>
+        <textarea name="tvshows_spoken_languages_json" rows="1" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Episode Run Time</label>
+        <input type="number" name="tvshows_episode_run_time" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Production Companies (JSON array):</label>
+        <textarea name="tvshows_prod_comp_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Production Countries (JSON array):</label>
+        <textarea name="tvshows_prod_ctry_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Upload Poster Image</label>
+        <input type="file" name="tvshows_image" accept="image/*" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+      </div>
+
+      <!-- --------------- CREDITS --------------- -->
+      <div id="credits-fields" class="hidden space-y-2">
+        <label>Name</label>
+        <input type="text" name="credits_title" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Movie ID</label>
+        <input type="number" name="credits_movie_id" class="w-full bg-gray-800 px-3 py-2 rounded"/>
+
+        <label>Cast (JSON array of {{ '{name,character,...}' }}):</label>
+        <textarea name="credits_cast_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+
+        <label>Crew (JSON array of {{ '{name,job,...}' }}):</label>
+        <textarea name="credits_crew_json" rows="2" class="w-full bg-gray-800 px-3 py-2 rounded"></textarea>
+      </div>
+
+      <button type="submit" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded">
+        Submit
+      </button>
+    </form>
+  </main>
+
+  <script>
+    const collEl      = document.getElementById("collection"),
+          opEl        = document.getElementById("operation"),
+          keyDiv      = document.getElementById("key-field"),
+          moviesDiv   = document.getElementById("movies-fields"),
+          tvDiv       = document.getElementById("tvshows-fields"),
+          creditsDiv  = document.getElementById("credits-fields");
+
+    function showFields() {
+      const c = collEl.value,
+            o = opEl.value;
+
+      // hide all sections
+      [keyDiv, moviesDiv, tvDiv, creditsDiv].forEach(el => el.classList.add("hidden"));
+
+      // show lookup key for read/update/delete
+      if (["read","update","delete"].includes(o)) {
+        keyDiv.classList.remove("hidden");
+      }
+
+      // show form fields for insert/update based on collection
+      if (["insert","update"].includes(o)) {
+        if (c === "movies")   moviesDiv.classList.remove("hidden");
+        if (c === "tvshows")  tvDiv.classList.remove("hidden");
+        if (c === "credits")  creditsDiv.classList.remove("hidden");
+      }
+    }
+
+    collEl.addEventListener("change", showFields);
+    opEl.addEventListener("change", showFields);
+  </script>
+</body>
+</html>

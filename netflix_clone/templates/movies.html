@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movies - Netflix</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+
+<!-- NAVBAR -->
+<nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+  <!-- Left Links -->
+  <div class="flex items-center space-x-6">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+         alt="Logo" class="h-8"/>
+    <a href="home" class="hover:text-gray-400">Home</a>
+    <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+    <a href="movies" class="hover:text-gray-400">Movies</a>
+    <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+    <a href="mylist" class="hover:text-gray-400">My List</a>
+    <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+  </div>
+
+  <!-- Right Icons -->
+  <div class="flex items-center space-x-4">
+    <!-- Search -->
+    <!-- inside <nav> -->
+<div class="flex items-center relative">
+  <button id="search-button" class="text-white p-2 focus:outline-none">
+    <i data-feather="search"></i>
+  </button>
+  <input
+    id="search-input"
+    type="text"
+    placeholder="Titles, people, genres"
+    class="ml-2 bg-gray-800 text-white placeholder-gray-400
+           px-4 py-1 rounded-full w-0 opacity-0
+           transition-all duration-300 ease-in-out focus:outline-none"
+  />
+  <div id="search-results"
+       class="hidden absolute top-full right-0 mt-2 w-72 max-h-64
+              overflow-y-auto bg-gray-800 text-white rounded shadow-lg
+              z-50 p-2 space-y-2">
+    <!-- JS will inject <div> results here -->
+  </div>
+</div>
+
+
+    <!-- Notifications -->
+    <button class="p-1 text-white focus:outline-none">
+      <i data-feather="bell"></i>
+    </button>
+
+    <!-- Profile -->
+    <div class="relative">
+      <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+        <span id="profile-emoji">👤</span>
+      </button>
+      <div id="profile-menu"
+           class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+        <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+        <a href="{% url 'multiquery' %}" class="block px-4 py-2 hover:bg-gray-700">Settings</a>
+        <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <!-- HERO SECTION -->
+  <section id="hero"
+           class="relative h-[80vh] bg-center bg-cover bg-no-repeat pt-28">
+    <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+    <div class="relative z-10 px-6 flex items-center space-x-4 mb-6">
+      <h1 class="text-5xl font-bold">Movies</h1>
+      <!-- Genres Dropdown -->
+      <div class="relative">
+        <button id="genre-button"
+                class="inline-flex items-center bg-gray-700 hover:bg-gray-600
+                       px-4 py-2 rounded text-sm font-medium focus:outline-none">
+          Genres <i data-feather="chevron-down" class="ml-2 w-4 h-4"></i>
+        </button>
+        <div id="genre-menu"
+             class="hidden absolute left-0 mt-2 w-[40rem] bg-black bg-opacity-90
+                    text-white rounded-lg p-4 grid grid-cols-5 gap-x-6 gap-y-3 z-30">
+          <a href="#" data-genre="Action"    class="hover:underline">Action</a>
+          <a href="#" data-genre="Drama"     class="hover:underline">Drama</a>
+          <a href="#" data-genre="Thriller"  class="hover:underline">Thriller</a>
+          <a href="#" data-genre="Romance"   class="hover:underline">Romance</a>
+          <a href="#" data-genre="Fantasy"   class="hover:underline">Fantasy</a>
+          <a href="#" data-genre="Comedy"    class="hover:underline">Comedy</a>
+          <a href="#" data-genre="Horror"    class="hover:underline">Horror</a>
+          <a href="#" data-genre="Sci-Fi"    class="hover:underline">Sci-Fi</a>
+          <a href="#" data-genre="Mystery"   class="hover:underline">Mystery</a>
+          <a href="#" data-genre="Adventure" class="hover:underline">Adventure</a>
+        </div>
+      </div>
+    </div>
+    <div class="absolute bottom-12 left-6 z-10 max-w-xl">
+      <h2 id="hero-title" class="text-4xl font-bold mb-4">Featured Movie</h2>
+      <p id="hero-desc" class="text-lg mb-6">A highlighted movie to enjoy!</p>
+      <button class="px-6 py-2 bg-white text-black font-semibold rounded mr-4 hover:bg-gray-200">
+        ▶ Play
+      </button>
+      <button class="px-6 py-2 bg-gray-700 bg-opacity-75 rounded hover:bg-gray-600">
+        More Info
+      </button>
+    </div>
+  </section>
+
+  <!-- MOVIES CAROUSEL -->
+  <section class="px-6 py-8 pt-0 mt-0">
+    <h2 class="text-2xl font-bold mb-4">{{ heading }}</h2>
+    <div class="flex overflow-x-scroll carousel space-x-4 pb-2">
+      {% for item in items %}
+        <div class="relative group flex-shrink-0 w-40 h-60 rounded overflow-hidden hover:scale-105 transition">
+          <img
+            src="{{ item.full_poster }}"
+            alt="{{ item.title }}"
+            class="w-full h-full object-cover"
+          />
+          <!-- hover-overlay -->
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                   group-hover:opacity-100 transition-opacity duration-200
+                   flex items-center justify-center space-x-3"
+          >
+            <!-- watched -->
+            <button
+                  aria-label="Mark {% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %} as Watched"
+                  onclick="showDetail('{% if item.title %}{{ item.title|escapejs }}{% elif item.name %}{{ item.name|escapejs }}{% else %}Untitled{% endif %}')"
+                  class="bg-white bg-opacity-80 hover:bg-opacity-100
+                         p-2 rounded-full focus:outline-none shadow-md"
+                >
+                  <i data-feather="check"></i>
+                </button>
+            <!-- my list -->
+            <button
+              aria-label="Add {{ item.title }} to My List"
+              onclick="addToMyList('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="plus"></i>
+            </button>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+
+   <!-- DETAIL DIALOG -->
+   <dialog id="detail-dialog" class="p-0 rounded-lg overflow-hidden">
+    <form method="dialog" class="flex justify-end p-2">
+      <button aria-label="Close" class="text-3xl">&times;</button>
+    </form>
+    <div class="flex bg-gray-900 text-white">
+      <img id="dlg-poster" class="w-32 h-48 object-cover" src="" alt="Poster">
+      <div class="p-4 space-y-2">
+        <h3 id="dlg-title" class="text-2xl font-bold"></h3>
+        <p id="dlg-overview" class="text-sm"></p>
+        <p><strong>Language:</strong> <span id="dlg-language"></span></p>
+        <p><strong>Genres:</strong> <span id="dlg-genres"></span></p>
+        <div>
+          <strong>Cast:</strong>
+          <ul id="dlg-cast" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+        <div>
+          <strong>Crew:</strong>
+          <ul id="dlg-crew" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    // ─── NAVBAR CONTROLS ──────────────────────────────────────────────────────────
+
+    // search expand/contract + fetch results
+    const btn   = document.getElementById('search-button'),
+          inp   = document.getElementById('search-input'),
+          panel = document.getElementById('search-results');
+
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (inp.classList.contains('w-0')) {
+        inp.classList.replace('w-0','w-64');
+        inp.classList.replace('opacity-0','opacity-100');
+        inp.focus();
+      } else {
+        doSearch();
+      }
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+    });
+    document.addEventListener('click', ev => {
+      if (!btn.contains(ev.target) && !panel.contains(ev.target)) {
+        panel.classList.add('hidden');
+        inp.classList.replace('w-64','w-0');
+        inp.classList.replace('opacity-100','opacity-0');
+      }
+    });
+
+    function doSearch(){
+      const q = inp.value.trim();
+      if (!q) return;
+      fetch(`{% url 'search' %}?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+          panel.innerHTML = '';
+          data.results.forEach(item => {
+            const d = document.createElement('div');
+            d.className = 'p-2 hover:bg-gray-800 rounded';
+            d.innerHTML = `
+              <div class="font-semibold">${item.title}</div>
+              <div class="text-xs text-gray-400">${item.type}</div>
+              ${item.overview
+                ? `<p class="text-sm mt-1 line-clamp-2">${item.overview}</p>`
+                : `<p class="text-sm italic text-gray-500">No description</p>`
+              }
+            `;
+            panel.appendChild(d);
+          });
+          panel.classList.remove('hidden');
+        });
+    }
+
+    // profile dropdown
+    const profBtn = document.getElementById('profile-button'),
+          profMenu = document.getElementById('profile-menu');
+    profBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      profMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profMenu.classList.add('hidden'));
+
+    // genre dropdown
+    const genreBtn  = document.getElementById('genre-button'),
+          genreMenu = document.getElementById('genre-menu');
+    genreBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      genreMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', e => {
+      if (!genreMenu.contains(e.target) && e.target !== genreBtn) {
+        genreMenu.classList.add('hidden');
+      }
+    });
+
+    // pick a random hero slide
+    document.addEventListener('DOMContentLoaded', () => {
+      const imgs = document.querySelectorAll('.carousel img');
+      if (!imgs.length) return;
+      const idx = Math.floor(Math.random() * imgs.length),
+            pick = imgs[idx];
+      document.getElementById('hero').style.backgroundImage = `url('${pick.src}')`;
+      document.getElementById('hero-title').textContent = pick.alt;
+      document.getElementById('hero-desc').textContent  = `Watch "${pick.alt}" — a highly rated movie!`;
+    });
+
+    // ─── WATCH / MY LIST AJAX ────────────────────────────────────────────────────
+
+    const markUrl = "{% url 'mark_watched' %}",
+          addUrl  = "{% url 'add_to_list' %}",
+          csrftok = "{{ csrf_token }}";
+
+    function markWatched(title) {
+      fetch(markUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':   csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'ok') console.log('✓ watched:', j.added);
+        else                   console.error('✗', j.error);
+      });
+    }
+
+    function addToMyList(title) {
+      fetch(addUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':   csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'ok') console.log('✓ list:', j.added);
+        else                   console.error('✗', j.error);
+      });
+    }
+
+    // ─── DETAIL DIALOG ──────────────────────────────────────────────────────────
+    window.showDetail = async function(title) {
+      const dialog = document.getElementById('detail-dialog');
+      let data;
+      try {
+        const resp = await fetch(
+          `{% url 'detail_api' 'TITLE_PLACEHOLDER' %}`.replace(
+            'TITLE_PLACEHOLDER',
+            encodeURIComponent(title)
+          )
+        );
+        if (!resp.ok) throw new Error(`Not found (${resp.status})`);
+        data = await resp.json();
+      } catch (fetchErr) {
+        console.error('Failed to fetch detail:', fetchErr);
+        return alert('Could not load details');
+      }
+
+      // populate basic fields
+      document.getElementById('dlg-title').textContent    = data.title || '';
+      document.getElementById('dlg-overview').textContent = data.overview || '';
+      document.getElementById('dlg-language').textContent    = data.language || '';
+      document.getElementById('dlg-genres').textContent   = (data.genres || []).join(', ');
+      document.getElementById('dlg-poster').src           = data.poster || '';
+
+      // safe‐guarded cast rendering
+      let castHtml = '';
+      try {
+        if (Array.isArray(data.cast)) {
+          castHtml = data.cast
+            .map(p => `<li>${p.name||'Unknown'} as ${p.character||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering cast list:', err);
+      }
+      document.getElementById('dlg-cast').innerHTML = castHtml;
+
+      // safe‐guarded crew rendering
+      let crewHtml = '';
+      try {
+        if (Array.isArray(data.crew)) {
+          crewHtml = data.crew
+            .map(p => `<li>${p.name||'Unknown'} — ${p.job||p.department||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering crew list:', err);
+      }
+      document.getElementById('dlg-crew').innerHTML = crewHtml;
+
+      // now show the dialog
+      dialog.showModal();
+    };
+  </script>
+
+</body>
+</html>

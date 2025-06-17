@@ -1,0 +1,54 @@
+<html>
+  {% load static %}
+  <head>
+    <meta name="description" content="Login to Netflix" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Login - Netflix</title>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar">
+        <div class="navbar__brand">
+          <img
+            src="https://www.freepnglogos.com/uploads/netflix-logo-0.png"
+            alt="logo"
+            class="brand__logo"
+          />
+        </div>
+        <div class="navbar__nav__items">
+          <a href="/signup"><button class="signin__button">Sign Up</button></a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero__card">
+          <h1 class="hero__title">Login to your account</h1>
+
+          <form action="/login" method="POST" class="email__form__container">
+            {% csrf_token %}
+            <div class="form__container">
+              <input type="email" name="email" class="email__input bg-white text-black p-2 rounded" placeholder=" " required />
+              <label class="email__label">Email Address</label>
+            </div>
+            <div class="form__container">
+              <input type="password" name="password" class="email__input bg-white text-black p-2 rounded" placeholder=" " required />
+              <label class="email__label">Password</label>
+            </div>
+            <button type="submit" class="primary__button">
+              Login <i class="fal fa-chevron-right"></i>
+            </button>
+          </form>
+          
+        </div>
+      </section>
+    </main>
+
+    <footer>
+    </footer>
+  </body>
+</html>

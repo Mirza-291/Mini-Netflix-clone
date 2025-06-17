@@ -1,0 +1,17 @@
+{% extends 'base_admin.html' %}
+{% block title %}Delete Movie{% endblock %}
+{% block content %}
+  <h1 class="text-3xl font-bold mb-6">Delete Movie</h1>
+  <p class="mb-6">Are you sure you want to delete <strong>{{ movie.title }}</strong>?</p>
+  <form method="post" class="space-x-4">
+    {% csrf_token %}
+    <button type="submit"
+            class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold">
+      Yes, delete
+    </button>
+    <a href="{% url 'admin_dashboard' %}?section=movies"
+       class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded">
+      Cancel
+    </a>
+  </form>
+{% endblock %}

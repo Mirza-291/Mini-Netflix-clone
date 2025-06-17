@@ -1,0 +1,39 @@
+{% extends 'base_admin.html' %}
+{% block title %}{% if user_obj %}Edit{% else %}Add{% endif %} User{% endblock %}
+{% block content %}
+  <h1 class="text-3xl font-bold mb-6">
+    {% if user_obj %}Edit{% else %}Add New{% endif %} User
+  </h1>
+
+  <form method="post" class="space-y-4 bg-gray-800 p-6 rounded shadow">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm">Username</label>
+      <input name="username" value="{{ user_obj.username|default:'' }}" required
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Email</label>
+      <input type="email" name="email" value="{{ user_obj.email|default:'' }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    {% if not user_obj %}
+    <div>
+      <label class="block text-sm">Password</label>
+      <input type="password" name="password" required
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    {% endif %}
+
+    <div class="flex space-x-4 mt-6">
+      <button type="submit"
+              class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
+        Save
+      </button>
+      <a href="{% url 'admin_dashboard' 'users' %}"
+         class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded">
+        Cancel
+      </a>
+    </div>
+  </form>
+{% endblock %}

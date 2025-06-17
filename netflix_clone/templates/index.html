@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix - Home</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+    <!-- Left Links -->
+    <div class="flex items-center space-x-6">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+           alt="Logo" class="h-8"/>
+      <a href="home" class="hover:text-gray-400">Home</a>
+      <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+      <a href="movies" class="hover:text-gray-400">Movies</a>
+      <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+      <a href="mylist" class="hover:text-gray-400">My List</a>
+      <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+    </div>
+
+    <!-- Right Icons -->
+    <div class="flex items-center space-x-4">
+      <!-- Search -->
+      <div class="flex items-center relative">
+        <button id="search-button" class="text-white p-2 focus:outline-none">
+          <i data-feather="search"></i>
+        </button>
+        <form action="{% url 'search_page' %}" method="get" class="flex items-center relative">
+          <input
+            id="search-input"
+            name="q"
+            type="text"
+            value="{{ q|default:'' }}"
+            placeholder="Titles, people, genres"
+            class="ml-2 bg-gray-800 text-white placeholder-gray-400
+                   px-4 py-1 rounded-full w-64 focus:outline-none"
+          />
+        </form>
+        <div id="search-results"
+             class="hidden absolute top-full right-0 mt-2 w-72 max-h-64
+                    overflow-y-auto bg-gray-800 text-white rounded shadow-lg
+                    z-50 p-2 space-y-2">
+          <!-- JS will inject results here -->
+        </div>
+      </div>
+
+      <!-- Notifications -->
+      <button class="p-1 text-white focus:outline-none">
+        <i data-feather="bell"></i>
+      </button>
+
+      <!-- Profile Dropdown -->
+      <div class="relative">
+        <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+          <span id="profile-emoji">👤</span>
+        </button>
+        <div id="profile-menu"
+             class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+          <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+          <a href="{% url 'change_password' %}" class="block px-4 py-2 hover:bg-gray-700">
+            Change Password
+          </a>
+          <button
+            id="delete-account-button"
+            class="block w-full text-left px-4 py-2 hover:bg-gray-700"
+          >
+            Delete Account
+          </button>
+          <a href="{% url 'visualization' %}" class="block px-4 py-2 hover:bg-gray-700">Visualization</a>
+          <a href="{% url 'crud' %}" class="block px-4 py-2 hover:bg-gray-700">CRUD</a>
+          <a href="{% url 'multiquery' %}" class="block px-4 py-2 hover:bg-gray-700">Multi Query</a>
+          <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="pt-24">
+
+    <!-- HERO BANNER -->
+    <section id="hero"
+             class="relative h-screen bg-center bg-cover bg-no-repeat mb-12 transition-all duration-500">
+      <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
+      <div class="absolute bottom-12 left-6 z-10 max-w-xl">
+        <h1 id="hero-title" class="text-5xl font-bold mb-4">Featured Title</h1>
+        <p id="hero-desc" class="text-lg mb-6">
+          An exciting description of the featured movie or show.
+        </p>
+        <button class="px-6 py-2 bg-white text-black font-semibold rounded mr-4 hover:bg-gray-200">
+          ▶ Play
+        </button>
+        <button class="px-6 py-2 bg-gray-700 bg-opacity-75 rounded hover:bg-gray-600">
+          + My List
+        </button>
+      </div>
+    </section>
+
+    <!-- FEATURED PICKS CAROUSEL -->
+    <section class="carousel-section-1 mb-8 px-6">
+      <h2 class="text-xl font-semibold mb-4">Featured Picks</h2>
+      <div class="relative">
+        <button
+          class="absolute left-6 top-1/2 transform -translate-y-1/2
+                 bg-black bg-opacity-50 p-2 rounded-full z-10 prev focus:outline-none"
+        >
+          ‹
+        </button>
+        <div class="flex overflow-x-scroll carousel space-x-4 pb-2">
+          {% for m in movies %}
+            <div class="relative group flex-shrink-0 w-40 h-60 rounded overflow-hidden">
+              <img
+                src="{{ m.full_poster }}"
+                alt="{% if m.title %}{{ m.title }}{% elif m.name %}{{ m.name }}{% else %}Untitled{% endif %}"
+                class="w-full h-full object-cover"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                       group-hover:opacity-100 transition-opacity duration-200
+                       flex items-center justify-center space-x-3"
+              >
+              
+                <button
+                  aria-label="Mark {% if m.title %}{{ m.title }}{% elif m.name %}{{ m.name }}{% else %}Untitled{% endif %} as Watched"
+                  onclick="showDetail('{% if m.title %}{{ m.title|escapejs }}{% elif m.name %}{{ m.name|escapejs }}{% else %}Untitled{% endif %}')"
+                  class="bg-white bg-opacity-80 hover:bg-opacity-100
+                         p-2 rounded-full focus:outline-none shadow-md"
+                >
+                  <i data-feather="check"></i>
+                </button>
+                <button
+                  aria-label="Add {% if m.title %}{{ m.title }}{% elif m.name %}{{ m.name }}{% else %}Untitled{% endif %} to My List"
+                  onclick="addToMyList('{% if m.title %}{{ m.title|escapejs }}{% elif m.name %}{{ m.name|escapejs }}{% else %}Untitled{% endif %}')"
+                  class="bg-white bg-opacity-80 hover:bg-opacity-100
+                         p-2 rounded-full focus:outline-none shadow-md"
+                >
+                  <i data-feather="plus"></i>
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+        
+        
+        <button
+          class="absolute right-6 top-1/2 transform -translate-y-1/2
+                 bg-black bg-opacity-50 p-2 rounded-full z-10 next focus:outline-none"
+        >
+          ›
+        </button>
+      </div>
+    </section>
+
+  </main>
+   <!-- DETAIL DIALOG -->
+   <dialog id="detail-dialog" class="p-0 rounded-lg overflow-hidden">
+    <form method="dialog" class="flex justify-end p-2">
+      <button aria-label="Close" class="text-3xl">&times;</button>
+    </form>
+    <div class="flex bg-gray-900 text-white">
+      <img id="dlg-poster" class="w-32 h-48 object-cover" src="" alt="Poster">
+      <div class="p-4 space-y-2">
+        <h3 id="dlg-title" class="text-2xl font-bold"></h3>
+        <p id="dlg-overview" class="text-sm"></p>
+        <p><strong>Genres:</strong> <span id="dlg-genres"></span></p>
+        <div>
+          <strong>Cast:</strong>
+          <ul id="dlg-cast" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+        <div>
+          <strong>Crew:</strong>
+          <ul id="dlg-crew" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+      </div>
+    </div>
+  </dialog>
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 py-8 px-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <h3 class="font-semibold mb-2">Company</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">About</a></li>
+          <li><a href="#" class="hover:text-white">Jobs</a></li>
+          <li><a href="#" class="hover:text-white">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Community</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Developers</a></li>
+          <li><a href="#" class="hover:text-white">Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Legal</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Terms of Use</a></li>
+          <li><a href="#" class="hover:text-white">Privacy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Connect</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Contact Us</a></li>
+          <li><a href="#" class="hover:text-white">Twitter</a></li>
+          <li><a href="#" class="hover:text-white">Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="text-xs mt-6">&copy; 2025 YourSite, Inc.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    // ─── PROFILE DROPDOWN + RANDOM EMOJI ─────────────────────────────────
+    const profileButton = document.getElementById('profile-button'),
+          profileMenu   = document.getElementById('profile-menu');
+    
+    profileButton.addEventListener('click', e => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profileMenu.classList.add('hidden'));
+    const EMOJIS = ['🍿','🎬','📺','🎥','👤','⭐'];
+    document.getElementById('profile-emoji').textContent
+      = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+
+    // ─── DELETE ACCOUNT AJAX ───────────────────────────────────────────────
+    document.getElementById('delete-account-button').addEventListener('click', ()=>{
+      if (!confirm("Are you sure you want to delete your account?")) return;
+      fetch("{% url 'delete_account' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':  "{{ csrf_token }}"
+        }
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status==='ok') window.location = '/';
+        else alert("Error: "+(j.message||j.error));
+      });
+    });
+
+    // ─── SEARCH EXPAND (no dropdown / direct submit) ───────────────────────
+    const btn   = document.getElementById('search-button'),
+          inp   = document.getElementById('search-input');
+    // clicking the icon just focuses the input
+    btn?.addEventListener('click', e => {
+      e.stopPropagation();
+      inp.focus();
+    });
+    // hitting Enter lets the form submit normally—no JS interception
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        // do nothing here so the browser submits the form to your search_page URL
+      }
+    });
+
+    // ─── WATCH / MY LIST BUTTONS (AJAX hooks) ──────────────────────────────
+    function markWatched(title){
+      fetch("{% url 'mark_watched' %}", {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','X-CSRFToken':"{{ csrf_token }}"},
+        body: JSON.stringify({ title })
+      });
+    }
+    function addToMyList(title){
+      fetch("{% url 'add_to_list' %}", {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json','X-CSRFToken':"{{ csrf_token }}"},
+        body: JSON.stringify({ title })
+      });
+    }
+
+    // ─── CAROUSEL CONTROLS & HERO ROTATION ─────────────────────────────────
+    document.querySelector('.prev').onclick = ()=>
+      document.querySelector('.carousel').scrollBy({left:-300,behavior:'smooth'});
+    document.querySelector('.next').onclick = ()=>
+      document.querySelector('.carousel').scrollBy({left:300,behavior:'smooth'});
+
+    function rotateHero(){
+      const cards = document.querySelectorAll('.carousel img'),
+            hero  = document.getElementById('hero'),
+            hT    = document.getElementById('hero-title'),
+            dT    = document.getElementById('hero-desc');
+      let idx = 0;
+      if(cards.length){
+        hero.style.backgroundImage = `url('${cards[0].src}')`;
+        hT.textContent = cards[0].alt;
+        dT.textContent = `Enjoy "${cards[0].alt}"—one of our top picks.`;
+      }
+      setInterval(()=>{
+        const img = cards[idx];
+        hero.style.backgroundImage = `url('${img.src}')`;
+        hT.textContent = img.alt;
+        dT.textContent = `Enjoy "${img.alt}"—one of our top picks.`;
+        idx = (idx+1)%cards.length;
+      },5000);
+    }
+    document.addEventListener('DOMContentLoaded', rotateHero);
+
+
+  window.showDetail = async function(title) {
+  const dialog = document.getElementById('detail-dialog');
+
+  // fetch your detail‐API
+  let data;
+  try {
+    const resp = await fetch(
+      `{% url 'detail_api' 'TITLE_PLACEHOLDER' %}`.replace(
+        'TITLE_PLACEHOLDER',
+        encodeURIComponent(title)
+      )
+    );
+    if (!resp.ok) throw new Error(`Not found (${resp.status})`);
+    data = await resp.json();
+  } catch (fetchErr) {
+    console.error('Failed to fetch detail:', fetchErr);
+    return alert('Could not load details');
+  }
+
+  // populate basic fields
+  document.getElementById('dlg-title').textContent    = data.title || '';
+  document.getElementById('dlg-overview').textContent = data.overview || '';
+  document.getElementById('dlg-genres').textContent   = (data.genres || []).join(', ');
+  document.getElementById('dlg-poster').src           = data.poster || '';
+
+  // safe‐guarded cast rendering
+  let castHtml = '';
+  try {
+    if (Array.isArray(data.cast)) {
+      castHtml = data.cast
+        .map(p => `<li>${p.name||'Unknown'} as ${p.character||'—'}</li>`)
+        .join('');
+    }
+  } catch (err) {
+    console.error('Error rendering cast list:', err);
+  }
+  document.getElementById('dlg-cast').innerHTML = castHtml;
+
+  // safe‐guarded crew rendering
+  let crewHtml = '';
+  try {
+    if (Array.isArray(data.crew)) {
+      crewHtml = data.crew
+        .map(p => `<li>${p.name||'Unknown'} — ${p.job||p.department||'—'}</li>`)
+        .join('');
+    }
+  } catch (err) {
+    console.error('Error rendering crew list:', err);
+  }
+  document.getElementById('dlg-crew').innerHTML = crewHtml;
+
+  // now show the dialog
+  dialog.showModal();
+};
+
+
+  </script>
+</body>
+</html>

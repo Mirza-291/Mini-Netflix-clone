@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse by Languages - Mini Netflix</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+    <!-- Left Links -->
+    <div class="flex items-center space-x-6">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+           alt="Logo" class="h-8"/>
+      <a href="home" class="hover:text-gray-400">Home</a>
+      <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+      <a href="movies" class="hover:text-gray-400">Movies</a>
+      <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+      <a href="mylist" class="hover:text-gray-400">My List</a>
+      <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+    </div>
+  
+    <!-- Right Icons -->
+    <div class="flex items-center space-x-4">
+      <!-- Search -->
+      <!-- inside <nav> -->
+  <div class="flex items-center relative">
+    <button id="search-button" class="text-white p-2 focus:outline-none">
+      <i data-feather="search"></i>
+    </button>
+    <input
+      id="search-input"
+      type="text"
+      placeholder="Titles, people, genres"
+      class="ml-2 bg-gray-800 text-white placeholder-gray-400
+             px-4 py-1 rounded-full w-0 opacity-0
+             transition-all duration-300 ease-in-out focus:outline-none"
+    />
+    <div id="search-results"
+         class="hidden absolute top-full right-0 mt-2 w-72 max-h-64
+                overflow-y-auto bg-gray-800 text-white rounded shadow-lg
+                z-50 p-2 space-y-2">
+      <!-- JS will inject <div> results here -->
+    </div>
+  </div>
+  
+  
+      <!-- Notifications -->
+      <button class="p-1 text-white focus:outline-none">
+        <i data-feather="bell"></i>
+      </button>
+  
+      <!-- Profile -->
+      <div class="relative">
+        <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+          <span id="profile-emoji">👤</span>
+        </button>
+        <div id="profile-menu"
+             class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+          <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+          <a href="{% url 'multiquery' %}" class="block px-4 py-2 hover:bg-gray-700">Settings</a>
+          <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PAGE CONTENT -->
+  <section class="pt-28 px-6">
+    <h1 class="text-4xl font-bold mb-6">{{ heading }}</h1>
+
+<!-- FILTER BAR -->
+<form method="get" class="flex flex-wrap items-center space-x-4 text-sm font-medium mb-8">
+  <span>Select Your Preferences</span>
+
+  <select name="mode" class="bg-gray-800 text-white rounded px-3 py-1 focus:outline-none">
+    <option {% if request.GET.mode == 'Original Language' %}selected{% endif %}>
+      Original Language
+    </option>
+    <option {% if request.GET.mode == 'Dubbing' %}selected{% endif %}>
+      Dubbing
+    </option>
+    <option {% if request.GET.mode == 'Subtitles' %}selected{% endif %}>
+      Subtitles
+    </option>
+  </select>
+
+  <select name="lang"
+          class="bg-gray-800 text-white rounded px-3 py-1 focus:outline-none"
+          onchange="this.form.submit()">
+    <option value="">-- select language --</option>
+    <option value="en" {% if selected_lang == 'en' %}selected{% endif %}>English</option>
+    <option value="hi" {% if selected_lang == 'hi' %}selected{% endif %}>Hindi</option>
+    <option value="es" {% if selected_lang == 'es' %}selected{% endif %}>Spanish</option>
+    <option value="ko" {% if selected_lang == 'ko' %}selected{% endif %}>Korean</option>
+    <option value="fr" {% if selected_lang == 'fr' %}selected{% endif %}>French</option>
+    <option value="ja" {% if selected_lang == 'ja' %}selected{% endif %}>Japanese</option>
+    <option value="de" {% if selected_lang == 'de' %}selected{% endif %}>German</option>
+    <option value="it" {% if selected_lang == 'it' %}selected{% endif %}>Italian</option>
+    <option value="ml" {% if selected_lang == 'ml' %}selected{% endif %}>Malayalam</option>
+    <option value="te" {% if selected_lang == 'te' %}selected{% endif %}>Telugu</option>
+  </select>
+
+  <span>Sort by</span>
+  <select name="sort" class="bg-gray-800 text-white rounded px-3 py-1 focus:outline-none">
+    <option {% if request.GET.sort == 'Suggestions For You' %}selected{% endif %}>
+      Suggestions For You
+    </option>
+    <option {% if request.GET.sort == 'Year Released' %}selected{% endif %}>
+      Year Released
+    </option>
+    <option {% if request.GET.sort == 'A-Z' %}selected{% endif %}>
+      A-Z
+    </option>
+    <option {% if request.GET.sort == 'Z-A' %}selected{% endif %}>
+      Z-A
+    </option>
+  </select>
+</form>
+
+
+    <!-- MOVIES GRID -->
+    <div id="language-list"
+         class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+      {% for item in items %}
+        
+
+        <div class="relative group flex-shrink-0 w-40 h-60 rounded overflow-hidden hover:scale-105 transition">
+          <img
+            src="{{ item.full_poster }}"
+            alt="{{ item.title }}"
+            class="w-full h-full object-cover"
+          />
+          <!-- hover-overlay -->
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                   group-hover:opacity-100 transition-opacity duration-200
+                   flex items-center justify-center space-x-3"
+          >
+            <!-- watched -->
+            <button
+                  aria-label="Mark {% if item.title %}{{ item.title }}{% elif item.name %}{{ item.name }}{% else %}Untitled{% endif %} as Watched"
+                  onclick="showDetail('{% if item.title %}{{ item.title|escapejs }}{% elif item.name %}{{ item.name|escapejs }}{% else %}Untitled{% endif %}')"
+                  class="bg-white bg-opacity-80 hover:bg-opacity-100
+                         p-2 rounded-full focus:outline-none shadow-md"
+                >
+                  <i data-feather="check"></i>
+                </button>
+            <!-- my list -->
+            <button
+              aria-label="Add {{ item.title }} to My List"
+              onclick="addToMyList('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="plus"></i>
+            </button>
+          </div>
+        </div>
+
+
+
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- DETAIL DIALOG -->
+  <dialog id="detail-dialog" class="p-0 rounded-lg overflow-hidden">
+    <form method="dialog" class="flex justify-end p-2">
+      <button aria-label="Close" class="text-3xl">&times;</button>
+    </form>
+    <div class="flex bg-gray-900 text-white">
+      <img id="dlg-poster" class="w-32 h-48 object-cover" src="" alt="Poster">
+      <div class="p-4 space-y-2">
+        <h3 id="dlg-title" class="text-2xl font-bold"></h3>
+        <p id="dlg-overview" class="text-sm"></p>
+        <p><strong>Language:</strong> <span id="dlg-language"></span></p>
+        <p><strong>Genres:</strong> <span id="dlg-genres"></span></p>
+        <div>
+          <strong>Cast:</strong>
+          <ul id="dlg-cast" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+        <div>
+          <strong>Crew:</strong>
+          <ul id="dlg-crew" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    // search toggle
+    const searchBtn = document.getElementById('search-button'),
+          searchInp = document.getElementById('search-input');
+    searchBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      searchInp.classList.toggle('w-64');
+      searchInp.classList.toggle('opacity-100');
+      searchInp.focus();
+    });
+    document.addEventListener('click', e => {
+      if (!searchInp.contains(e.target) && !searchBtn.contains(e.target)) {
+        searchInp.classList.remove('w-64','opacity-100');
+        searchInp.classList.add('w-0','opacity-0');
+      }
+    });
+
+    // profile dropdown
+    const profBtn = document.getElementById('profile-button'),
+          profMenu = document.getElementById('profile-menu');
+    profBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      profMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profMenu.classList.add('hidden'));
+
+
+
+    // ─── WATCH / MY LIST AJAX ────────────────────────────────────────────────────
+
+    const markUrl = "{% url 'mark_watched' %}",
+          addUrl  = "{% url 'add_to_list' %}",
+          csrftok = "{{ csrf_token }}";
+
+    function markWatched(title) {
+      fetch(markUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':   csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'ok') console.log('✓ watched:', j.added);
+        else                   console.error('✗', j.error);
+      });
+    }
+
+    function addToMyList(title) {
+      fetch(addUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':   csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'ok') console.log('✓ list:', j.added);
+        else                   console.error('✗', j.error);
+      });
+    }
+
+    // ─── DETAIL DIALOG ──────────────────────────────────────────────────────────
+    window.showDetail = async function(title) {
+      const dialog = document.getElementById('detail-dialog');
+      let data;
+      try {
+        const resp = await fetch(
+          `{% url 'detail_api' 'TITLE_PLACEHOLDER' %}`.replace(
+            'TITLE_PLACEHOLDER',
+            encodeURIComponent(title)
+          )
+        );
+        if (!resp.ok) throw new Error(`Not found (${resp.status})`);
+        data = await resp.json();
+      } catch (fetchErr) {
+        console.error('Failed to fetch detail:', fetchErr);
+        return alert('Could not load details');
+      }
+
+      // populate basic fields
+      document.getElementById('dlg-title').textContent    = data.title || '';
+      document.getElementById('dlg-overview').textContent = data.overview || '';
+      document.getElementById('dlg-language').textContent    = data.language || '';
+      document.getElementById('dlg-genres').textContent   = (data.genres || []).join(', ');
+      document.getElementById('dlg-poster').src           = data.poster || '';
+
+      // safe‐guarded cast rendering
+      let castHtml = '';
+      try {
+        if (Array.isArray(data.cast)) {
+          castHtml = data.cast
+            .map(p => `<li>${p.name||'Unknown'} as ${p.character||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering cast list:', err);
+      }
+      document.getElementById('dlg-cast').innerHTML = castHtml;
+
+      // safe‐guarded crew rendering
+      let crewHtml = '';
+      try {
+        if (Array.isArray(data.crew)) {
+          crewHtml = data.crew
+            .map(p => `<li>${p.name||'Unknown'} — ${p.job||p.department||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering crew list:', err);
+      }
+      document.getElementById('dlg-crew').innerHTML = crewHtml;
+
+      // now show the dialog
+      dialog.showModal();
+    };
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+1. CRUD OPERATION ON ALL THE DATASET: USERS,TVSHOWS,MOVIES,CREDITS. (90%)
+2. SEARCH QUERIES MORE EFFICIENT LIKE ON MOVIES, TVSHOWS, WATCHLIST, MOVIE ACTORS, PRODUCER, DIRECTORS, CREDITS. (80%)
+3. VISUALIZATION ON THE DATASET.(90%)
+4. authentication, forward and backward button, refereshing. (80%)
+5. Give option to clear the WATCHLIST (90%)
+6. Report
+7. crud operation enforcing unique primary key. 
+8. movies/tvshow details on the hovering over the image/poster
+
+
+

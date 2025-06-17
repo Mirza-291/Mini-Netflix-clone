@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Dashboard – Netflix Clone</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex">
+{% comment %} Use GET parameter first, then fallback to context 'section' {% endcomment %}
+{% with current_section=request.GET.section|default:section %}
+
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-800 p-6 space-y-6">
+    <h2 class="text-xl font-bold">Admin</h2>
+    <nav class="space-y-2">
+      <a href="{% url 'admin_dashboard' section='movies' %}"
+         class="block px-4 py-2 rounded hover:bg-gray-700 {% if current_section == 'movies' %}bg-gray-700{% endif %}">
+        Movies
+      </a>
+      <a href="{% url 'admin_dashboard' section='tvshows' %}"
+         class="block px-4 py-2 rounded hover:bg-gray-700 {% if current_section == 'tvshows' %}bg-gray-700{% endif %}">
+        TV Shows
+      </a>
+      <a href="{% url 'admin_dashboard' section='users' %}"
+         class="block px-4 py-2 rounded hover:bg-gray-700 {% if current_section == 'users' %}bg-gray-700{% endif %}">
+        Users
+      </a>
+      <a href="{% url 'admin_logout' %}"
+         class="block px-4 py-2 rounded hover:bg-red-700 text-red-400">
+        <i data-feather="log-out"></i> Sign Out
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 p-8 overflow-auto">
+    <h1 class="text-3xl font-bold mb-8">
+      {% if current_section == 'movies' %}
+        Manage Movies
+      {% elif current_section == 'tvshows' %}
+        Manage TV Shows
+      {% else %}
+        Manage Users
+      {% endif %}
+    </h1>
+
+    <!-- Create button -->
+    <a href="{% if current_section == 'movies' %}
+               {% url 'movie_create' %}
+             {% elif current_section == 'tvshows' %}
+               {% url 'tvshow_create' %}
+             {% else %}
+               {% url 'user_create' %}
+             {% endif %}"
+       class="mb-6 inline-block bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+      + Add
+      {% if current_section == 'movies' %}
+        Movie
+      {% elif current_section == 'tvshows' %}
+        TV Show
+      {% else %}
+        User
+      {% endif %}
+    </a>
+
+    <!-- Listing table -->
+    <div class="overflow-x-auto bg-gray-800 rounded shadow">
+      <table class="min-w-full divide-y divide-gray-700">
+        <thead class="bg-gray-900">
+          <tr>
+            {% if current_section == 'movies' %}
+              <th class="px-4 py-2">Title</th>
+              <th class="px-4 py-2">Release Date</th>
+              <th class="px-4 py-2">Revenue</th>
+            {% elif current_section == 'tvshows' %}
+              <th class="px-4 py-2">Name</th>
+              <th class="px-4 py-2">First Air Date</th>
+              <th class="px-4 py-2">Seasons</th>
+            {% else %}
+              <th class="px-4 py-2">Username</th>
+              <th class="px-4 py-2">Email</th>
+              <th class="px-4 py-2">Signed Up</th>
+            {% endif %}
+            <th class="px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-700">
+          {% for obj in objects %}
+            <tr>
+              {% if current_section == 'movies' %}
+                <td class="px-4 py-2">{{ obj.title }}</td>
+                <td class="px-4 py-2">{{ obj.release_date }}</td>
+                <td class="px-4 py-2">{{ obj.revenue }}</td>
+              {% elif current_section == 'tvshows' %}
+                <td class="px-4 py-2">{{ obj.name }}</td>
+                <td class="px-4 py-2">{{ obj.first_air_date }}</td>
+                <td class="px-4 py-2">{{ obj.seasons_count }}</td>
+              {% else %}
+                <td class="px-4 py-2">{{ obj.username }}</td>
+                <td class="px-4 py-2">{{ obj.email }}</td>
+                <td class="px-4 py-2">{{ obj.signup_date }}</td>
+              {% endif %}
+              <td class="px-4 py-2 space-x-2">
+                {% if current_section == 'movies' %}
+                  {% url 'movie_update' id=obj.id as update_url %}
+                  {% url 'movie_delete' id=obj.id as delete_url %}
+                {% elif current_section == 'tvshows' %}
+                  {% url 'tvshow_update' id=obj.id as update_url %}
+                  {% url 'tvshow_delete' id=obj.id as delete_url %}
+                {% else %}
+                  {% url 'user_update'  id=obj.id as update_url %}
+                  {% url 'user_delete'  id=obj.id as delete_url %}
+                {% endif %}
+                <script>
+                    console.log("EDIT LINK:", "{{ obj.id }}");
+                  </script>
+
+                <a href="{{ update_url }}" class="text-blue-400 hover:underline">Edit</a>
+                <a href="{{ delete_url }}"
+                   class="text-red-400 hover:underline"
+                   onclick="return confirm('Delete this entry?');">
+                  Delete
+                </a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="px-4 py-6 text-center text-gray-500">
+                No {{ current_section }} found.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </main>
+{% endwith %}
+
+  <script>
+    feather.replace();
+  </script>
+</body>
+</html>

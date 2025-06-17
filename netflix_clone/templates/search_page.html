@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix - Search</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+    <!-- Left Links -->
+    <div class="flex items-center space-x-6">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+           alt="Logo" class="h-8"/>
+      <a href="home" class="hover:text-gray-400">Home</a>
+      <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+      <a href="movies" class="hover:text-gray-400">Movies</a>
+      <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+      <a href="mylist" class="hover:text-gray-400">My List</a>
+      <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+    </div>
+    <form action="{% url 'search_page' %}" method="get" class="relative">
+      <input
+        name="q"
+        value="{{ q }}"
+        placeholder="Search…"
+        class="bg-gray-800 rounded-full px-3 py-1 focus:outline-none"
+      />
+    </form>
+    <div class="flex items-center space-x-4">
+      <!-- Notifications -->
+      <button class="p-1 text-white focus:outline-none">
+        <i data-feather="bell"></i>
+      </button>
+      <!-- Profile -->
+      <div class="relative">
+        <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+          <span id="profile-emoji">👤</span>
+        </button>
+        <div id="profile-menu"
+             class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+          <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+          <a href="{% url 'change_password' %}" class="block px-4 py-2 hover:bg-gray-700">
+            Change Password
+          </a>
+          <button
+            id="delete-account-button"
+            class="block w-full text-left px-4 py-2 hover:bg-gray-700"
+          >
+            Delete Account
+          </button>
+          <a href="{% url 'crud' %}" class="block px-4 py-2 hover:bg-gray-700">CRUD</a>
+          <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="px-6 py-8 pt-24">
+    <h1 class="text-2xl font-semibold mb-6">
+      Search results for “{{ q }}”
+    </h1>
+
+    {% if movies %}
+    <section class="mb-12">
+      <h2 class="text-xl font-bold mb-4">Movies:</h2>
+      <div class="grid grid-cols-5 gap-4">
+        {% for item in movies %}
+        <div class="relative group">
+          <img
+            src="{{ item.poster }}"
+            alt="{{ item.title }}"
+            class="w-full rounded-lg"
+          />
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                   group-hover:opacity-100 transition-opacity duration-200
+                   flex items-center justify-center space-x-3 rounded-lg"
+          >
+            <button
+              aria-label="Play {{ item.title }}"
+              onclick="showDetail('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="play"></i>
+            </button>
+            <button
+              aria-label="Mark {{ item.title }} as Watched"
+              onclick="markWatched('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="check"></i>
+            </button>
+            <button
+              aria-label="Add {{ item.title }} to My List"
+              onclick="addToMyList('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="plus"></i>
+            </button>
+          </div>
+          <div class="mt-2 font-medium text-center">{{ item.title }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if tvshows %}
+    <section class="mb-12">
+      <h2 class="text-xl font-bold mb-4">TV Shows:</h2>
+      <div class="grid grid-cols-5 gap-4">
+        {% for item in tvshows %}
+        <div class="relative group">
+          <img
+            src="{{ item.poster }}"
+            alt="{{ item.title }}"
+            class="w-full rounded-lg"
+          />
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                   group-hover:opacity-100 transition-opacity duration-200
+                   flex items-center justify-center space-x-3 rounded-lg"
+          >
+            <button
+              aria-label="Play {{ item.title }}"
+              onclick="showDetail('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="play"></i>
+            </button>
+            <button
+              aria-label="Mark {{ item.title }} as Watched"
+              onclick="markWatched('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="check"></i>
+            </button>
+            <button
+              aria-label="Add {{ item.title }} to My List"
+              onclick="addToMyList('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="plus"></i>
+            </button>
+          </div>
+          <div class="mt-2 font-medium text-center">{{ item.title }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if users %}
+    <section class="mb-12">
+      <h2 class="text-xl font-bold mb-4">Your Watchlist:</h2>
+      <div class="grid grid-cols-5 gap-4">
+        {% for item in users %}
+        <div class="relative group">
+          <img
+            src="{{ item.poster }}"
+            alt="{{ item.title }}"
+            class="w-full rounded-lg"
+          />
+          <div
+            class="absolute inset-0 bg-black bg-opacity-50 opacity-0
+                   group-hover:opacity-100 transition-opacity duration-200
+                   flex items-center justify-center space-x-3 rounded-lg"
+          >
+            <button
+              aria-label="Play {{ item.title }}"
+              onclick="showDetail('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="play"></i>
+            </button>
+            <button
+              aria-label="Mark {{ item.title }} as Watched"
+              onclick="markWatched('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="check"></i>
+            </button>
+            <button
+              aria-label="Add {{ item.title }} to My List"
+              onclick="addToMyList('{{ item.title|escapejs }}')"
+              class="bg-white bg-opacity-80 hover:bg-opacity-100
+                     p-2 rounded-full focus:outline-none shadow-md"
+            >
+              <i data-feather="plus"></i>
+            </button>
+          </div>
+          <div class="mt-2 font-medium text-center">{{ item.title }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if not movies and not tvshows and not users %}
+    <p class="text-gray-500">No results found for “{{ q }}.”</p>
+    {% endif %}
+  </main>
+
+  <!-- DETAIL DIALOG -->
+  <dialog id="detail-dialog" class="p-0 rounded-lg overflow-hidden">
+    <form method="dialog" class="flex justify-end p-2">
+      <button aria-label="Close" class="text-3xl">&times;</button>
+    </form>
+    <div class="flex bg-gray-900 text-white">
+      <img id="dlg-poster" class="w-32 h-48 object-cover" src="" alt="Poster">
+      <div class="p-4 space-y-2">
+        <h3 id="dlg-title" class="text-2xl font-bold"></h3>
+        <p id="dlg-overview" class="text-sm"></p>
+        <p><strong>Language:</strong> <span id="dlg-language"></span></p>
+        <p><strong>Genres:</strong> <span id="dlg-genres"></span></p>
+        <div>
+          <strong>Cast:</strong>
+          <ul id="dlg-cast" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+        <div>
+          <strong>Crew:</strong>
+          <ul id="dlg-crew" class="list-disc list-inside text-sm max-h-32 overflow-y-auto"></ul>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    // profile dropdown + random emoji
+    const profileButton = document.getElementById('profile-button'),
+          profileMenu   = document.getElementById('profile-menu');
+    profileButton.addEventListener('click', e => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profileMenu.classList.add('hidden'));
+    const EMOJIS = ['🍿','🎬','📺','🎥','👤','⭐'];
+    document.getElementById('profile-emoji').textContent
+      = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+
+    // DELETE ACCOUNT AJAX
+    document.getElementById('delete-account-button')?.addEventListener('click', ()=>{
+      if (!confirm("Delete account?")) return;
+      fetch("{% url 'delete_account' %}", {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'X-CSRFToken': "{{ csrf_token }}"
+        }
+      })
+      .then(r=>r.json()).then(j=>{
+        if (j.status==='ok') window.location='/';
+        else alert("Error");
+      });
+    });
+
+    // WATCH / MY LIST BUTTONS
+    function markWatched(title) {
+      fetch("{% url 'mark_watched' %}", {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'X-CSRFToken': "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ title })
+      });
+    }
+    function addToMyList(title) {
+      fetch("{% url 'add_to_list' %}", {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'X-CSRFToken': "{{ csrf_token }}"
+        },
+        body: JSON.stringify({ title })
+      });
+    }
+
+    // DETAIL DIALOG
+    window.showDetail = async function(title) {
+      const dialog = document.getElementById('detail-dialog');
+      let data;
+      try {
+        const resp = await fetch(
+          `{% url 'detail_api' 'TITLE_PLACEHOLDER' %}`.replace(
+            'TITLE_PLACEHOLDER', encodeURIComponent(title)
+          )
+        );
+        if (!resp.ok) throw new Error(`Not found (${resp.status})`);
+        data = await resp.json();
+      } catch (fetchErr) {
+        console.error('Failed to fetch detail:', fetchErr);
+        return alert('Could not load details');
+      }
+
+      document.getElementById('dlg-title').textContent    = data.title || '';
+      document.getElementById('dlg-overview').textContent = data.overview || '';
+      document.getElementById('dlg-language').textContent    = data.language || '';
+      document.getElementById('dlg-genres').textContent   = (data.genres || []).join(', ');
+      document.getElementById('dlg-poster').src           = data.poster || '';
+
+      let castHtml = '';
+      try {
+        if (Array.isArray(data.cast)) {
+          castHtml = data.cast
+            .map(p => `<li>${p.name||'Unknown'} as ${p.character||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering cast list:', err);
+      }
+      document.getElementById('dlg-cast').innerHTML = castHtml;
+
+      let crewHtml = '';
+      try {
+        if (Array.isArray(data.crew)) {
+          crewHtml = data.crew
+            .map(p => `<li>${p.name||'Unknown'} — ${p.job||p.department||'—'}</li>`)
+            .join('');
+        }
+      } catch (err) {
+        console.error('Error rendering crew list:', err);
+      }
+      document.getElementById('dlg-crew').innerHTML = crewHtml;
+
+      dialog.showModal();
+    };
+  </script>
+</body>
+</html>

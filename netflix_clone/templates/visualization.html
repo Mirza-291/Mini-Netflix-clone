@@ -1,0 +1,203 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Netflix - Visualization</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+  <!-- NAVBAR -->
+  <nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+    <div class="flex items-center space-x-6">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+           alt="Logo" class="h-8"/>
+      <a href="{% url 'home' %}" class="hover:text-gray-400">Home</a>
+      <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+      <a href="movies" class="hover:text-gray-400">Movies</a>
+      <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+      <a href="mylist" class="hover:text-gray-400">My List</a>
+      <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+      <a href="{% url 'crud' %}" class="hover:text-gray-400">CRUD</a>
+    </div>
+    <form action="{% url 'search_page' %}" method="get" class="relative">
+      <input
+        name="q"
+        value="{{ q }}"
+        placeholder="Search…"
+        class="bg-gray-800 rounded-full px-3 py-1 focus:outline-none"
+      />
+    </form>
+    <div class="flex items-center space-x-4">
+      <button class="p-1 text-white focus:outline-none"><i data-feather="bell"></i></button>
+      <div class="relative">
+        <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+          <span id="profile-emoji">👤</span>
+        </button>
+        <div id="profile-menu"
+             class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+          <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+          <a href="{% url 'change_password' %}" class="block px-4 py-2 hover:bg-gray-700">Change Password</a>
+          <button id="delete-account-button" class="block w-full text-left px-4 py-2 hover:bg-gray-700">
+            Delete Account
+          </button>
+          <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="pt-24 px-6">
+    <h1 class="text-3xl font-bold mb-6">{{ heading|default:"Select a report" }}</h1>
+
+    <!-- Dropdown + Run button -->
+    <form method="get" class="mb-8 flex items-center space-x-2">
+      <label for="query" class="sr-only">Choose report</label>
+      <select name="query" id="query"
+              class="bg-gray-800 text-white rounded px-4 py-2 focus:outline-none">
+        <option value="">-- Select a report --</option>
+        {% for key,label in options.items %}
+          <option value="{{ key }}" {% if key == selected %}selected{% endif %}>
+            {{ label }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit"
+              class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+        Run
+      </button>
+    </form>
+
+    {% if selected %}
+      {% if table_data %}
+        <!-- TABLE -->
+        <div class="overflow-x-auto bg-gray-800 rounded shadow mb-8">
+          <table class="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                {% for col in table_data.0.keys %}
+                  <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">
+                    {{ col|capfirst }}
+                  </th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+              {% for row in table_data %}
+                <tr>
+                  {% for val in row.values %}
+                    <td class="px-4 py-2 text-sm text-gray-100">
+                      {{ val }}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- CHART -->
+        <div class="bg-gray-800 rounded shadow p-6">
+          <canvas id="chartCanvas"></canvas>
+        </div>
+      {% else %}
+        <p class="text-gray-400">No data returned for “{{ heading }}”.</p>
+      {% endif %}
+    {% endif %}
+  </main>
+
+  <!-- JSON for Chart.js config -->
+  {{ chart_config|json_script:"chart-config" }}
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 py-8 px-6 mt-12">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div>
+        <h3 class="font-semibold mb-2">Company</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">About</a></li>
+          <li><a href="#" class="hover:text-white">Jobs</a></li>
+          <li><a href="#" class="hover:text-white">Press</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Community</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Developers</a></li>
+          <li><a href="#" class="hover:text-white">Support</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Legal</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Terms of Use</a></li>
+          <li><a href="#" class="hover:text-white">Privacy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="font-semibold mb-2">Connect</h3>
+        <ul class="space-y-1 text-sm">
+          <li><a href="#" class="hover:text-white">Contact Us</a></li>
+          <li><a href="#" class="hover:text-white">Twitter</a></li>
+          <li><a href="#" class="hover:text-white">Instagram</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="text-xs mt-6">&copy; 2025 YourSite, Inc.</p>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    feather.replace();
+
+    // profile dropdown + random emoji
+    const profileButton = document.getElementById('profile-button'),
+          profileMenu   = document.getElementById('profile-menu');
+    profileButton.addEventListener('click', e => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profileMenu.classList.add('hidden'));
+    const EMOJIS = ['🍿','🎬','📺','🎥','👤','⭐'];
+    document.getElementById('profile-emoji').textContent
+      = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+
+    // delete account
+    document.getElementById('delete-account-button').addEventListener('click', ()=>{
+      if (!confirm("Delete your account?")) return;
+      fetch("{% url 'delete_account' %}", {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'X-CSRFToken':"{{ csrf_token }}"
+        }
+      }).then(r=>r.json()).then(j=>{
+        if(j.status==='ok') window.location='/';
+        else alert("Error");
+      });
+    });
+
+    // render dynamic chart
+    document.addEventListener('DOMContentLoaded', () => {
+      const cfg = JSON.parse(document.getElementById('chart-config').textContent || '{}');
+      if (Object.keys(cfg).length) {
+        new Chart(
+          document.getElementById('chartCanvas'),
+          cfg
+        );
+      }
+    });
+  </script>
+</body>
+</html>

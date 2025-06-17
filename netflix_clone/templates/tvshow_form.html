@@ -1,0 +1,43 @@
+{% extends 'base_admin.html' %}
+{% block title %}{% if show %}Edit{% else %}Add{% endif %} TV Show{% endblock %}
+{% block content %}
+  <h1 class="text-3xl font-bold mb-6">
+    {% if show %}Edit{% else %}Add New{% endif %} TV Show
+  </h1>
+
+  <form method="post" class="space-y-4 bg-gray-800 p-6 rounded shadow">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm">Name</label>
+      <input name="name" value="{{ show.name|default:'' }}" required
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">First Air Date</label>
+      <input type="date" name="first_air_date" value="{{ show.first_air_date|date:'Y-m-d' }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Seasons Count</label>
+      <input type="number" name="seasons_count" value="{{ show.seasons_count|default:1 }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Genres (comma-separated)</label>
+      <input name="genres" value="{{ show.genres|join:',' }}"
+             placeholder="Drama, Mystery"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+
+    <div class="flex space-x-4 mt-6">
+      <button type="submit"
+              class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
+        Save
+      </button>
+      <a href="{% url 'admin_dashboard' %}?section=tvshows"
+         class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded">
+        Cancel
+      </a>
+    </div>
+  </form>
+{% endblock %}

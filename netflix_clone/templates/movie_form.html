@@ -1,0 +1,48 @@
+{% extends 'base_admin.html' %}
+{% block title %}{% if movie %}Edit{% else %}New{% endif %} Movie{% endblock %}
+{% block content %}
+  <h1 class="text-3xl font-bold mb-6">
+    {% if movie %}Edit{% else %}Add New{% endif %} Movie
+  </h1>
+
+  <form method="post" class="space-y-4 bg-gray-800 p-6 rounded shadow">
+    {% csrf_token %}
+    <div>
+      <label class="block text-sm">Title</label>
+      <input name="title" value="{{ movie.title|default:'' }}" required
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Release Date</label>
+      <input type="date" name="release_date" value="{{ movie.release_date|date:'Y-m-d' }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Genres (comma-separated)</label>
+      <input name="genres" value="{{ movie.genres|join:',' }}"
+             placeholder="Action, Comedy, Drama"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Runtime (minutes)</label>
+      <input type="number" name="runtime" value="{{ movie.runtime|default:0 }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+    <div>
+      <label class="block text-sm">Revenue (USD)</label>
+      <input type="number" name="revenue" value="{{ movie.revenue|default:0 }}"
+             class="w-full mt-1 px-3 py-2 bg-gray-700 rounded focus:outline-none"/>
+    </div>
+
+    <div class="flex space-x-4 mt-6">
+      <button type="submit"
+              class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold">
+        Save
+      </button>
+      <a href="{% url 'admin_dashboard' %}?section=movies"
+         class="bg-gray-600 hover:bg-gray-500 px-4 py-2 rounded">
+        Cancel
+      </a>
+    </div>
+  </form>
+{% endblock %}

@@ -1,0 +1,296 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Data Explorer — Mini Netflix</title>
+  <link rel="stylesheet" href="{% static 'styles.css' %}"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    .carousel::-webkit-scrollbar { display: none; }
+    .carousel { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen pt-24">
+
+<!-- NAVBAR -->
+<nav class="flex items-center justify-between px-6 py-4 fixed top-0 w-full bg-gray-900 bg-opacity-85 z-30">
+  <!-- Left Links -->
+  <div class="flex items-center space-x-6">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png"
+         alt="Logo" class="h-8"/>
+    <a href="home" class="hover:text-gray-400">Home</a>
+    <a href="tvshows" class="hover:text-gray-400">TV Shows</a>
+    <a href="movies" class="hover:text-gray-400">Movies</a>
+    <a href="{% url 'new_popular' %}" class="hover:text-gray-400">New & Popular</a>
+    <a href="mylist" class="hover:text-gray-400">My List</a>
+    <a href="browsebylanguage" class="hover:text-gray-400">Browse by Languages</a>
+  </div>
+
+  <!-- Right Icons -->
+  <div class="flex items-center space-x-4">
+    <!-- Search -->
+    <!-- inside <nav> -->
+<div class="flex items-center relative">
+  <button id="search-button" class="text-white p-2 focus:outline-none">
+    <i data-feather="search"></i>
+  </button>
+  <input
+    id="search-input"
+    type="text"
+    placeholder="Titles, people, genres"
+    class="ml-2 bg-gray-800 text-white placeholder-gray-400
+           px-4 py-1 rounded-full w-0 opacity-0
+           transition-all duration-300 ease-in-out focus:outline-none"
+  />
+  <div id="search-results"
+       class="hidden absolute top-full right-0 mt-2 w-72 max-h-64
+              overflow-y-auto bg-gray-800 text-white rounded shadow-lg
+              z-50 p-2 space-y-2">
+    <!-- JS will inject <div> results here -->
+  </div>
+</div>
+
+
+    <!-- Notifications -->
+    <button class="p-1 text-white focus:outline-none">
+      <i data-feather="bell"></i>
+    </button>
+
+    <!-- Profile -->
+    <div class="relative">
+      <button id="profile-button" class="focus:outline-none text-2xl leading-none">
+        <span id="profile-emoji">👤</span>
+      </button>
+      <div id="profile-menu"
+           class="hidden absolute right-0 mt-2 w-48 bg-gray-800 text-white rounded shadow-lg">
+        <a href="#" class="block px-4 py-2 hover:bg-gray-700">Profile</a>
+        <a href="{% url 'multiquery' %}" class="block px-4 py-2 hover:bg-gray-700">Settings</a>
+        <a href="logout" class="block px-4 py-2 hover:bg-gray-700">Sign Out</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <main class="px-6 mt-8">
+    <h1 class="text-3xl font-bold mb-4">{{ heading }}</h1>
+
+    <!-- Query selector -->
+    <form method="get" class="mb-6">
+      <label for="query" class="sr-only">Choose report</label>
+      <select name="query" id="query"
+              class="bg-gray-800 text-white rounded px-4 py-2 focus:outline-none">
+        <option value="">-- Select a report --</option>
+        {% for key,label in options.items %}
+          <option value="{{ key }}"
+            {% if key == selected %}selected{% endif %}>
+            {{ label.0 }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit"
+              class="ml-2 bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+        Run
+      </button>
+    </form>
+
+    <!-- Results -->
+    {% if selected %}
+      {% if results %}
+        <div class="overflow-x-auto bg-gray-800 rounded shadow">
+          <table class="min-w-full divide-y divide-gray-700">
+            <thead>
+              <tr>
+                {% for col in results.0.keys %}
+                  <th class="px-4 py-2 text-left text-sm font-medium text-gray-300">
+                    {{ col|capfirst }}
+                  </th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+              {% for row in results %}
+                <tr>
+                  {% for val in row.values %}
+                    <td class="px-4 py-2 text-sm text-gray-100">
+                      {{ val }}
+                    </td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="text-gray-400">No data returned for “{{ heading }}”.</p>
+      {% endif %}
+    {% endif %}
+  </main>
+
+  <script>
+    feather.replace();
+  
+    // profile dropdown + random emoji
+    const profileButton = document.getElementById('profile-button'),
+          profileMenu   = document.getElementById('profile-menu');
+    profileButton.addEventListener('click', e => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('hidden');
+    });
+    document.addEventListener('click', () => profileMenu.classList.add('hidden'));
+    const EMOJIS=['🍿','🎬','📺','🎥','👤','⭐'];
+    document.getElementById('profile-emoji').textContent
+      = EMOJIS[Math.floor(Math.random()*EMOJIS.length)];
+  
+    // search expand + fetch + render
+    const btn    = document.getElementById('search-button'),
+          inp    = document.getElementById('search-input'),
+          panel  = document.getElementById('search-results');
+  
+    // toggle open
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (inp.classList.contains('w-0')) {
+        inp.classList.replace('w-0','w-64');
+        inp.classList.replace('opacity-0','opacity-100');
+        inp.focus();
+      } else {
+        doSearch();
+      }
+    });
+  
+    // search on Enter
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSearch();
+      }
+    });
+  
+    // click outside hides
+    document.addEventListener('click', ev => {
+      if (!btn.contains(ev.target) && !panel.contains(ev.target)) {
+        panel.classList.add('hidden');
+        inp.classList.replace('w-64','w-0');
+        inp.classList.replace('opacity-100','opacity-0');
+      }
+    });
+  
+    function doSearch(){
+      const q = inp.value.trim();
+      if (!q) return;
+      fetch(`{% url 'search' %}?q=${encodeURIComponent(q)}`)
+        .then(r => r.json())
+        .then(data => {
+          panel.innerHTML = '';
+          data.results.forEach(item => {
+            // truncate overview to max 80 characters
+            let desc = '';
+            if (item.overview) {
+              desc = item.overview.length > 80
+                ? item.overview.slice(0, 80) + '…'
+                : item.overview;
+            }
+  
+            const d = document.createElement('div');
+            d.className = 'p-2 hover:bg-gray-700 rounded cursor-pointer';
+            d.innerHTML = `
+              <div class="font-semibold">${item.title}</div>
+              <div class="text-xs text-gray-400">${item.type}</div>
+              ${ desc
+                  ? `<p class="text-sm mt-1">${desc}</p>`
+                  : ''
+              }
+            `;
+            // optional: add click handler to go to details page
+            // d.onclick = () => window.location = `/detail/${encodeURIComponent(item.title)}`;
+            panel.appendChild(d);
+          });
+          panel.classList.remove('hidden');
+        });
+    }
+  
+    // carousel controls
+    document.querySelector('.prev').onclick = () =>
+      document.querySelector('.carousel').scrollBy({left:-300,behavior:'smooth'});
+    document.querySelector('.next').onclick = () =>
+      document.querySelector('.carousel').scrollBy({left:300,behavior:'smooth'});
+  
+    // placeholder callbacks
+    function markWatched(title) {
+      console.log('Watched:', title);
+      // TODO: AJAX POST to your Django view
+    }
+    function addToMyList(title) {
+      console.log('MyList:', title);
+      // TODO: AJAX POST to your Django view
+    }
+  
+    // hero rotation
+    function rotateHero() {
+      const cards  = document.querySelectorAll('.carousel img'),
+            heroEl = document.getElementById('hero'),
+            titleEl= document.getElementById('hero-title'),
+            descEl = document.getElementById('hero-desc');
+      let idx = 0;
+      if(cards.length){
+        heroEl.style.backgroundImage = `url('${cards[0].src}')`;
+        titleEl.textContent = cards[0].alt;
+        descEl.textContent  = `Enjoy "${cards[0].alt}"—one of our top picks.`;
+      }
+      setInterval(()=>{
+        const img = cards[idx];
+        heroEl.style.backgroundImage = `url('${img.src}')`;
+        titleEl.textContent = img.alt;
+        descEl.textContent  = `Enjoy "${img.alt}"—one of our top picks.`;
+        idx = (idx+1) % cards.length;
+      },5000);
+    }
+  
+    document.addEventListener('DOMContentLoaded', () => {
+      rotateHero();
+    });
+  
+    // reverse() will include the slash
+    const markUrl = "{% url 'mark_watched' %}",
+          addUrl  = "{% url 'add_to_list'  %}",
+          csrftok = "{{ csrf_token }}";
+  
+    function markWatched(title) {
+      fetch(markUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken':  csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json()).then(j => {
+        if (j.status==='ok') console.log('✓ watched:',j.added);
+        else               console.error('✗',j.error);
+      });
+    }
+  
+    function addToMyList(title) {
+      fetch(addUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftok
+        },
+        body: JSON.stringify({ title })
+      })
+      .then(r => r.json()).then(j => {
+        if (j.status==='ok') console.log('✓ list:',j.added);
+        else                  console.error('✗',j.error);
+      });
+    }
+  
+  
+  
+  </script>
+</body>
+
+</html>
