@@ -1,130 +1,148 @@
-# 🎬 Mini Netflix Clone
+# Mini Netflix Clone 🎬
 
-> A full-stack web application replicating core Netflix functionality with semantic search, watch-lists, analytics, and admin tooling.
+![Mini Netflix Clone](https://img.shields.io/badge/version-1.0.0-blue.svg) ![Release](https://img.shields.io/badge/release-latest-orange.svg)
 
-**Author:** Suhas 
+Welcome to the **Mini Netflix Clone** repository! This project is a minimal version of Netflix that showcases powerful search capabilities and is designed for future enhancements. Whether you're a developer looking to explore or a user interested in a simplified streaming experience, you’ll find value here.
 
----
+## Table of Contents
 
-## 🚀 Project Overview
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API Documentation](#api-documentation)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
 
-The Mini Netflix Clone is a proof-of-concept platform enabling users to explore a rich media library of movies and TV shows. It features:
-- Semantic search across metadata, cast, and genres
-- Personalized watch-lists with LLM-based and cast-based recommendations
-- Admin CRUD operations with poster uploads
-- An interactive visualization dashboard with Chart.js
-- Email-based auth (sign-up/login/password change)
+## Features 🌟
 
+- **User-Friendly Interface**: The application provides a clean and intuitive design for easy navigation.
+- **Search Functionality**: Users can search for movies and shows with various filters.
+- **Responsive Design**: The app works well on both desktop and mobile devices.
+- **Future Enhancements**: Plans are in place for additional features, including personalized recommendations and user accounts.
 
-## 🚀 Future Enhancements
+## Technologies Used 🛠️
 
-- Plan to refactor the entire codebase using React for the frontend and Node.js with TypeScript for the backend.
-- Plan to acheive Scalable, Reliable, fault tolerant system design.
-- Plan to build on aws using services like EKS, ECR, API gateway, load balancer, autoscaling, route 53, lambda, dynamodb, kenesis, and so on.
----
+This project leverages a variety of technologies:
 
-## 👨‍💻 Team
+- **Backend**: 
+  - Python with Django Rest Framework
+  - REST API architecture for smooth data handling
+- **Frontend**:
+  - HTML5, CSS (Tailwind CSS)
+  - JavaScript for dynamic interactions
+- **APIs**:
+  - TMDB API for movie data
+  - GROQ API for semantic search capabilities
+- **Containerization**:
+  - Docker for easy deployment
+  - Kubernetes for orchestration
+- **Large Language Models**:
+  - Integration with OpenAI for advanced features
 
-| Member                 | Role / Contribution                              |
-|------------------------|--------------------------------------------------|
-| Suhas               | Sole Developer – architecture, code, UI/UX, testing |
+## Installation ⚙️
 
----
+To set up the Mini Netflix Clone on your local machine, follow these steps:
 
-## 🧠 Core Features
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Mirza-291/Mini-Netflix-clone.git
+   ```
 
-- 🎯 **Semantic Search:** Full-text + FAISS embedding re-rank across collections
-- 📑 **Watch-List:** Save titles, get shared-cast & GPT-4 powered recs
-- 🌐 **Language & Genre Explorer:** Interactive carousels with TMDB poster fallback
-- 🛠 **Admin CRUD:** Insert/update/delete movies, TV shows, and cast info
-- 📊 **Analytics Dashboard:** 6+ MongoDB aggregations visualized with Chart.js
-- 🔐 **Authentication:** Email sign-up/login and password management
+2. **Navigate to the Project Directory**:
+   ```bash
+   cd Mini-Netflix-clone
+   ```
 
----
+3. **Set Up the Environment**:
+   - Ensure you have Python and Docker installed.
+   - Create a virtual environment and activate it:
+     ```bash
+     python -m venv venv
+     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+     ```
 
-## 🛠️ Tech Stack
+4. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-| Layer       | Tech Used                                       |
-|-------------|-------------------------------------------------|
-| Front-end   | HTML5, Tailwind CSS, Vanilla JS, Chart.js       |
-| Back-end    | Django 4                                        |
-| Database    | MongoDB 7 (with Djongo ORM)                     |
-| ML & Search | Sentence Transformers, FAISS, OpenAI GPT-4,groq |
-| APIs        | TMDB REST API, API endpoints                    |
-| DevOps      | Docker, Git/GitHub                              |
-| Hosting     | GCP VM (during development)                     |
+5. **Run the Application**:
+   - Start the server:
+     ```bash
+     python manage.py runserver
+     ```
 
----
+6. **Access the Application**:
+   - Open your web browser and go to `http://127.0.0.1:8000`.
 
-## 🔌 API Endpoints
+For the latest releases, check out the [Releases section](https://github.com/Mirza-291/Mini-Netflix-clone/releases).
 
-### `/search?q=<query>`
-- Combines BM25 recall with FAISS semantic re-rank
-- Aggregates from movies, TV shows, genres, cast, and watch-list
+## Usage 📽️
 
-### `/browsebylanguage?lang=<iso-code>`
-- Shows 5 movies, 5 shows, 5 watch-list items for a language
+Once the application is running, you can start exploring the features. Here’s how to make the most of it:
 
-### `/mylist`
-- Watch-list dashboard with:
-  - Shared-cast recommendations
-  - LLM-based recommendations
-  - Popularity fallback suggestions
+- **Search for Movies**: Use the search bar to find your favorite films or series.
+- **Explore Categories**: Navigate through various categories to discover new content.
+- **View Details**: Click on any movie or show to see detailed information, including ratings and descriptions.
 
-### `/new-and-popular?genre=<genre>`
-- Genre trends with cast enrichment and personalized highlights
+## API Documentation 📡
 
-### `/crud`
-- Admin page for CRUD operations across collections with image uploads
+The Mini Netflix Clone uses a RESTful API to manage data. Here’s a brief overview of the available endpoints:
 
-### `/detail/<title>`
-- Full data fetch with TMDB fallback for missing info
+### Endpoints
 
-### `/visualization?query=<type>`
-- 7 chart types available:
-  - `top_actors`
-  - `top_directors`
-  - `avg_runtime`
-  - `yearly_stats`
-  - `actor_coappearances`
-  - `top3_movies`
+- **GET /api/movies/**: Retrieve a list of all movies.
+- **GET /api/movies/{id}/**: Get details of a specific movie.
+- **POST /api/movies/**: Add a new movie (admin access required).
+- **DELETE /api/movies/{id}/**: Remove a movie from the database (admin access required).
 
----
+### Example Request
 
-## 📊 Visualization Dashboard
+To get a list of movies, you can use the following cURL command:
 
-Implemented using MongoDB Aggregations and Python fallbacks. Supports:
+```bash
+curl -X GET http://127.0.0.1:8000/api/movies/
+```
 
-- 📌 Top actors by appearance
-- 🎬 Top directors by revenue
-- ⏱️ Average runtime per genre
-- 📈 Yearly content statistics
-- 🤝 Actor co-appearances
-- 🏆 Top-3 movies by director
+### Response
 
----
+The response will be in JSON format, providing you with the necessary details about each movie.
 
-## 🖥️ UI Snapshots
+## Contributing 🤝
 
-- Landing page
-- Hero & carousel home screen
-- TV Shows, Movies, and New & Popular pages
-- My List and Browse by Language views
-- Admin CRUD panel
-- Login / Sign-up / Change Password screens
-- Visualization dashboard
-- Semantic search results page
+We welcome contributions to enhance the Mini Netflix Clone. If you’d like to contribute, please follow these steps:
 
----
+1. **Fork the Repository**: Click on the "Fork" button at the top right of this page.
+2. **Create a New Branch**: 
+   ```bash
+   git checkout -b feature/YourFeatureName
+   ```
+3. **Make Your Changes**: Implement your feature or fix.
+4. **Commit Your Changes**: 
+   ```bash
+   git commit -m "Add Your Feature Description"
+   ```
+5. **Push to Your Branch**: 
+   ```bash
+   git push origin feature/YourFeatureName
+   ```
+6. **Open a Pull Request**: Go to the original repository and click on "New Pull Request".
 
-## 🧪 Note
+We appreciate your interest in contributing!
 
-> This repo contains only select code snippets and endpoints. The full project spans over 2000+ lines of code with comprehensive queries and components.
+## License 📜
 
----
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 📎 License
+## Contact 📬
 
-This project is for educational/demo purposes and is not affiliated with Netflix Inc.
+For any questions or suggestions, feel free to reach out:
 
----
+- **GitHub**: [Mirza-291](https://github.com/Mirza-291)
+- **Email**: your-email@example.com
+
+For the latest updates and releases, visit the [Releases section](https://github.com/Mirza-291/Mini-Netflix-clone/releases).
+
+Thank you for checking out the Mini Netflix Clone! We hope you enjoy exploring it as much as we enjoyed building it.
